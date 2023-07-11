@@ -7,7 +7,7 @@ function useToggle(initialState = true) {
     setVisible(prevVisible => !prevVisible);
   }
 
-  return [visible, setVisible];
+  return [visible, toggle];
 }
 
 export default useToggle

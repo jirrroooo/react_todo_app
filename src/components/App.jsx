@@ -6,6 +6,7 @@ import TodoForm from './TodoForm';
 import TodoList from './TodoList';
 import useLocalStorage from '../hooks/useLocalStorage';
 import { TodosContext } from '../context/TodosContext';
+import { CSSTransition, SwitchTransition } from 'react-transition-group';
 
 function App() {
   const [name, setName] = useLocalStorage('name', '');
@@ -40,12 +41,17 @@ function App() {
   }
 
   return (
-    <TodosContext.Provider value={
-      {
-        todos, setTodos, idForTodo, setIdForTodo, 
-        todosFiltered, filter, setFilter
-      }
-    }>
+    <TodosContext.Provider
+      value={{
+        todos,
+        setTodos,
+        idForTodo,
+        setIdForTodo,
+        todosFiltered,
+        filter,
+        setFilter,
+      }}
+    >
       <div className="todo-app-container">
         <div className="todo-app">
           <div className="name-container">
@@ -60,17 +66,50 @@ function App() {
                 onChange={handleNameInput}
               />
             </form>
-            {name && <p className="name-label">Hello, {name}</p>}
+
+            <CSSTransition
+             in={name.length > 0}
+              timeout={300}
+              classNames="slide-vertical"
+              unmountOnExit
+            >
+            <p className="name-label">Hello, {name}</p>
+            </CSSTransition>
+          
           </div>
           <h2>Todo App</h2>
 
-          <TodoForm/>
+          <TodoForm />
 
-          {todos.length > 0 ? (
-            <TodoList/>
-          ) : (
+          <SwitchTransition mode="out-in">
+            <CSSTransition
+              key={todos.length > 0}
+              timeout={300}
+              classNames="slide-vertical"
+              unmountOnExit
+            >
+              {todos.length > 0 ? <TodoList /> : <NoTodos />}
+            
+            </CSSTransition>
+          </SwitchTransition>
+
+          {/* <CSSTransition
+            in={todos.length > 0}
+            timeout={300}
+            classNames="slide-horizontal"
+            unmountOnExit
+          >
+            <TodoList />
+          </CSSTransition>
+
+          <CSSTransition
+            in={todos.length === 0}
+            timeout={300}
+            classNames="slide-horizontal"
+            unmountOnExit
+          >
             <NoTodos />
-          )}
+          </CSSTransition> */}
         </div>
       </div>
     </TodosContext.Provider>
