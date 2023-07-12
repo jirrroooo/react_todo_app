@@ -1,116 +1,140 @@
-import '../reset.css';
-import '../App.css';
-import { useRef, useEffect, useState } from 'react';
+import { useState } from 'react';
 import NoTodos from './NoTodos';
 import TodoForm from './TodoForm';
 import TodoList from './TodoList';
-import useLocalStorage from '../hooks/useLocalStorage';
-import { TodosContext } from '../context/TodosContext';
-import { CSSTransition, SwitchTransition } from 'react-transition-group';
+import '../reset.css';
+import '../App.css';
 
 function App() {
-  const [name, setName] = useLocalStorage('name', '');
-  const nameInputEl = useRef(null);
-  const [todos, setTodos] = useLocalStorage('todos', []);
-  const [idForTodo, setIdForTodo] = useLocalStorage('idForTodo', 1);
-  const [filter, setFilter] = useState('all');
+  const [todos, setTodos] = useState([
+    {
+      id: 1,
+      title: 'Finish React Series',
+      isComplete: false,
+      isEditing: false,
+    },
+    {
+      id: 2,
+      title: 'Go Grocery',
+      isComplete: true,
+      isEditing: false,
+    },
+    {
+      id: 3,
+      title: 'Take over world',
+      isComplete: false,
+      isEditing: false,
+    },
+  ]);
 
-  function todosFiltered() {
-    if (filter === 'all') {
-      return todos;
-    } else if (filter === 'active') {
-      return todos.filter(todo => !todo.isComplete);
-    } else if (filter === 'completed') {
-      return todos.filter(todo => todo.isComplete);
-    }
+  const [idForTodo, setIdForTodo] = useState(4);
+
+  function addTodo(todo) {
+    setTodos([
+      ...todos,
+      {
+        id: idForTodo,
+        title: todo,
+        isComplete: false,
+      },
+    ]);
+
+    setIdForTodo(prevIdForTodo => prevIdForTodo + 1);
   }
 
-  useEffect(() => {
-    nameInputEl.current.focus();
+  function deleteTodo(id) {
+    setTodos([...todos].filter(todo => todo.id !== id));
+  }
 
-    // setName(JSON.parse(localStorage.getItem('name')) ?? '');
+  function completeTodo(id) {
+    const updatedTodos = todos.map(todo => {
+      if (todo.id === id) {
+        todo.isComplete = !todo.isComplete;
+      }
 
-    return function cleanup() {
-      // cleaning up
-    };
-  }, []);
+      return todo;
+    });
 
-  function handleNameInput(event) {
-    setName(event.target.value);
-    // localStorage.setItem('name', JSON.stringify(event.target.value))
+    setTodos(updatedTodos);
+  }
+
+  function markAsEditing(id) {
+    const updatedTodos = todos.map(todo => {
+      if (todo.id === id) {
+        todo.isEditing = true;
+      }
+
+      return todo;
+    });
+
+    setTodos(updatedTodos);
+  }
+
+  function updateTodo(event, id) {
+    const updatedTodos = todos.map(todo => {
+      if (todo.id === id) {
+        if (event.target.value.trim().length === 0) {
+          todo.isEditing = false;
+          return todo;
+        }
+        todo.title = event.target.value;
+        todo.isEditing = false;
+      }
+
+      return todo;
+    });
+
+    setTodos(updatedTodos);
+  }
+
+  function cancelEdit(event, id) {
+    const updatedTodos = todos.map(todo => {
+      if (todo.id === id) {
+        todo.isEditing = false;
+      }
+
+      return todo;
+    });
+
+    setTodos(updatedTodos);
+  }
+
+  function completeAllTodos() {
+    const updatedTodos = todos.map(todo => {
+      todo.isComplete = true;
+
+      return todo;
+    });
+
+    setTodos(updatedTodos);
+  }
+
+  function remaining() {
+    return todos.filter(todo => !todo.isComplete).length;
   }
 
   return (
-    <TodosContext.Provider
-      value={{
-        todos,
-        setTodos,
-        idForTodo,
-        setIdForTodo,
-        todosFiltered,
-        filter,
-        setFilter,
-      }}
-    >
-        <div className="todo-app">
-          <div className="name-container">
-            <h2>What is your name?</h2>
-            <form action="#">
-              <input
-                type="text"
-                ref={nameInputEl}
-                className="todo-input"
-                placeholder="What is your name?"
-                value={name}
-                onChange={handleNameInput}
-              />
-            </form>
+    <div className="todo-app-container">
+      <div className="todo-app">
+        <h2>Todo App</h2>
+        <TodoForm addTodo={addTodo} />
 
-            <CSSTransition
-             in={name.length > 0}
-              timeout={300}
-              classNames="slide-vertical"
-              unmountOnExit
-            >
-            <p className="name-label">Hello, {name}</p>
-            </CSSTransition>
-          
-          </div>
-          <h2>Todo App</h2>
-
-          <TodoForm />
-
-          <SwitchTransition mode="out-in">
-            <CSSTransition
-              key={todos.length > 0}
-              timeout={300}
-              classNames="slide-vertical"
-              unmountOnExit
-            >
-              {todos.length > 0 ? <TodoList /> : <NoTodos />}
-            
-            </CSSTransition>
-          </SwitchTransition>
-
-          {/* <CSSTransition
-            in={todos.length > 0}
-            timeout={300}
-            classNames="slide-horizontal"
-            unmountOnExit
-          >
-            <TodoList />
-          </CSSTransition>
-
-          <CSSTransition
-            in={todos.length === 0}
-            timeout={300}
-            classNames="slide-horizontal"
-            unmountOnExit
-          >
-            <NoTodos />
-          </CSSTransition> */}
-        </div>
-    </TodosContext.Provider>
+        {todos.length > 0 ? (
+          <TodoList
+            todos={todos}
+            completeTodo={completeTodo}
+            markAsEditing={markAsEditing}
+            updateTodo={updateTodo}
+            cancelEdit={cancelEdit}
+            deleteTodo={deleteTodo}
+            remaining={remaining}
+            completeAllTodos={completeAllTodos}
+          />
+        ) : (
+          <NoTodos />
+        )}
+      </div>
+    </div>
   );
 }
 
