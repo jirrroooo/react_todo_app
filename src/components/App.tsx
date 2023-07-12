@@ -36,6 +36,7 @@ function App() {
         id: idForTodo,
         title: todo,
         isComplete: false,
+        isEditing: false,
       },
     ]);
 
@@ -73,11 +74,11 @@ function App() {
   function updateTodo(event, id) {
     const updatedTodos = todos.map(todo => {
       if (todo.id === id) {
-        if (event.target.value.trim().length === 0) {
+        if (event.currentTarget.value.trim().length === 0) {
           todo.isEditing = false;
           return todo;
         }
-        todo.title = event.target.value;
+        todo.title = event.currentTarget.value;
         todo.isEditing = false;
       }
 

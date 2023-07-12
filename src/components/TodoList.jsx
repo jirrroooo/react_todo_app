@@ -75,7 +75,9 @@ function TodoList(props) {
 
       <div className="check-all-container">
         <div>
-          <button onClick={props.completeAllTodos} className="button">Check All</button>
+          <button onClick={props.completeAllTodos} className="button">
+            Check All
+          </button>
         </div>
 
         <span>{props.remaining()} items remaining</span>
